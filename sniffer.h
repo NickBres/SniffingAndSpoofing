@@ -6,7 +6,6 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h> // for inet_ntoa()
 #include <netinet/ip_icmp.h>
-#include <time.h>
 
 #define FILTER_A "tcp and host 127.0.0.1 and dst port 9999"
 #define FILTER_C "icmp"

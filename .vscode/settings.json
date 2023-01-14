@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "typeinfo": "c",
-        "ip_icmp.h": "c"
+        "ip_icmp.h": "c",
+        "spoofer.h": "c"
     }
 }

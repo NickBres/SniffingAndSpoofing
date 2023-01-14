@@ -1,11 +1,13 @@
 CC = gcc
 CFLAGS = -Wall -g -fPIC
 
-all: sniffer
+all: sniffer spoofer
 	clear
 	rm log.txt
 
 sniffer: sniffer.o
+	$(CC) $(CFLAGS) $^ -o $@ -lpcap
+spoofer: spoofer.o
 	$(CC) $(CFLAGS) $^ -o $@ -lpcap
 
 #------- o files-------
@@ -14,4 +16,4 @@ sniffer: sniffer.o
 #------------------------------
 
 clean:
-	rm  *.o sniffer
+	rm  *.o sniffer spoofer

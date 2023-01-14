@@ -188,7 +188,7 @@ char *getDevice(char *errbuf, pcap_t *handle)
   if (pcap_findalldevs(&alldevsp, errbuf))
   {
     printf("Error finding devices : %s", errbuf);
-    exit(1);
+    return 1;
   }
   printf("Done");
 
@@ -210,7 +210,7 @@ char *getDevice(char *errbuf, pcap_t *handle)
   if (handle == NULL)
   {
     fprintf(stderr, "Couldn't open device %s : %s\n", devs[n], errbuf);
-    exit(1);
+    return 1;
   }
   printf("Done\n");
   char *devName = devs[n];
