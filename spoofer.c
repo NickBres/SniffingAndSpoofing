@@ -57,7 +57,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
             printf("Catched ICMP echo request to %s\n", inet_ntoa(dest.sin_addr));
             char *reply = create_reply_packet(packet, ethLen, len);
             dest.sin_family = AF_INET;
-            int i = send_reply(reply, len, dest );
+            int i = send_reply(reply, len - ethLen, dest );
             if(i == -1)
             {
                 printf("Error sending reply\n");
