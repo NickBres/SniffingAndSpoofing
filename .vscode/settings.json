@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "typeinfo": "c",
+        "ip_icmp.h": "c"
+    }
+}
