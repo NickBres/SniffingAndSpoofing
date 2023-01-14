@@ -10,13 +10,13 @@ int main()
   char errbuf[PCAP_ERRBUF_SIZE];
   struct bpf_program fp;
 
-  char *devname = getDevice(errbuf, handle);
+  char *devname = getDevice(errbuf, handle); // get the device name from the user
 
   // Open the device for sniffing
   printf("Opening device %s for sniffing ...\n", devname);
   handle = pcap_open_live(devname, 65536, 1, 0, errbuf);
 
-  if(handle == NULL)
+  if (handle == NULL)
   {
     fprintf(stderr, "Couldn't open device %s: %s\n", devname, errbuf);
     return (2);
@@ -43,19 +43,16 @@ int main()
 
   printf("filter: %s\n", filter_exp);
   bpf_u_int32 net;
-printf("1\n ");
   // Step 2: Compile filter_exp into BPF psuedo-code
   if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1)
   {
     fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
   }
-printf("2\n ");
   if (pcap_setfilter(handle, &fp) == -1)
   {
     fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
     return (2);
   }
-printf("3\n ");
 
   log = fopen("log.txt", "w");
   if (log == NULL)

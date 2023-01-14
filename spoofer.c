@@ -78,7 +78,7 @@ int send_reply(char *reply,int length, struct sockaddr_in dest){
         return -1;
     }
     int enable = 1;
-    setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &enable, sizeof(enable));
+    setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &enable, sizeof(enable)); 
     int i = sendto(sock, reply, length, 0, (struct sockaddr *)&dest, sizeof(dest));
     if (i < 0)
     {
@@ -102,6 +102,7 @@ char* create_reply_packet(const u_char *packet, int sizeEth, int length)
     struct icmphdr *icmp_header_reply = (struct icmphdr *)(reply + sizeof(struct iphdr));
     char *data_reply = (char *)(reply + sizeof(struct iphdr) + sizeof(struct icmphdr));
 
+    // ip header
     ip_header_reply->ihl = ip_header->ihl;
     ip_header_reply->version = ip_header->version;
     ip_header_reply->tos = ip_header->tos;
@@ -114,6 +115,7 @@ char* create_reply_packet(const u_char *packet, int sizeEth, int length)
     ip_header_reply->saddr = ip_header->daddr;
     ip_header_reply->daddr = ip_header->saddr;
 
+    // icmp header
     icmp_header_reply->type = 0;
     icmp_header_reply->code = 0;
     icmp_header_reply->checksum = 0;
