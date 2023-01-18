@@ -48,29 +48,44 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     {
         int ethLen = sizeof(struct ethhdr) + 2;
         struct iphdr *ip_header = (struct iphdr *)(packet + ethLen);
-        struct icmphdr *icmp_header = (struct icmphdr *)(packet + ethLen + sizeof(struct iphdr));
-        if(icmp_header->type == 8)
+        switch (ip_header->protocol)
         {
-            struct sockaddr_in dest;
-            dest.sin_addr.s_addr = ip_header->daddr;
-            
-            printf("Catched ICMP echo request to %s\n", inet_ntoa(dest.sin_addr));
-            char *reply = create_reply_packet(packet, ethLen, len);
-            dest.sin_family = AF_INET;
-            int i = send_reply(reply, len - ethLen, dest );
-            if(i == -1)
-            {
-                printf("Error sending reply\n");
-            }
-            else
-            {
-                printf("Reply sent: %d bytes\n",i);
-            }
+        case 1: // icmp
+            icmp(packet, len, ethLen);
+            break;
+        default:
+            printf("Not ICMP\n");
+            break;
         }
     }
 };
 
-int send_reply(char *reply,int length, struct sockaddr_in dest){
+void icmp(const u_char *packet, int len, int ethLen)
+{
+    struct iphdr *ip_header = (struct iphdr *)(packet + ethLen);
+    struct icmphdr *icmp_header = (struct icmphdr *)(packet + ethLen + sizeof(struct iphdr));
+    if (icmp_header->type == 8)
+    {
+        struct sockaddr_in dest;
+        dest.sin_addr.s_addr = ip_header->daddr;
+
+        printf("Catched ICMP echo request to %s\n", inet_ntoa(dest.sin_addr));
+        char *reply = create_reply_packet(packet, ethLen, len);
+        dest.sin_family = AF_INET;
+        int i = send_reply(reply, len - ethLen, dest);
+        if (i == -1)
+        {
+            printf("Error sending reply\n");
+        }
+        else
+        {
+            printf("Reply sent: %d bytes\n", i);
+        }
+    }
+};
+
+int send_reply(char *reply, int length, struct sockaddr_in dest)
+{
     int sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
     if (sock < 0)
     {
@@ -78,7 +93,7 @@ int send_reply(char *reply,int length, struct sockaddr_in dest){
         return -1;
     }
     int enable = 1;
-    setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &enable, sizeof(enable)); 
+    setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &enable, sizeof(enable));
     int i = sendto(sock, reply, length, 0, (struct sockaddr *)&dest, sizeof(dest));
     if (i < 0)
     {
@@ -90,7 +105,7 @@ int send_reply(char *reply,int length, struct sockaddr_in dest){
     return i;
 };
 
-char* create_reply_packet(const u_char *packet, int sizeEth, int length)
+char *create_reply_packet(const u_char *packet, int sizeEth, int length)
 {
     char *reply = malloc(length - sizeEth);
     struct iphdr *ip_header = (struct iphdr *)(packet + sizeEth);
@@ -132,36 +147,36 @@ char* create_reply_packet(const u_char *packet, int sizeEth, int length)
 char *getDevice(char *errbuf, pcap_t *handle)
 {
 
-  int count = 1, n;
-  pcap_if_t *alldevsp, *device;
-  char *devs[100][100];
-  // First get the list of available devices
-  printf("Finding available devices ... ");
-  if (pcap_findalldevs(&alldevsp, errbuf))
-  {
-    printf("Error finding devices : %s", errbuf);
-    return 1;
-  }
-  printf("Done");
-
-  // Print the available devices
-  printf("\nAvailable Devices are :\n");
-  for (device = alldevsp; device != NULL; device = device->next)
-  {
-    printf("%d. %s - %s\n", count, device->name, device->description);
-    if (device->name != NULL)
+    int count = 1, n;
+    pcap_if_t *alldevsp, *device;
+    char *devs[100][100];
+    // First get the list of available devices
+    printf("Finding available devices ... ");
+    if (pcap_findalldevs(&alldevsp, errbuf))
     {
-      strcpy(devs[count], device->name);
+        printf("Error finding devices : %s", errbuf);
+        return 1;
     }
-    count++;
-  }
+    printf("Done");
 
-  // Ask user which device to sniff
-  printf("Enter the number of the device you want to sniff : ");
-  scanf("%d", &n);
-  printf("Done\n");
-  char *devName = devs[n];
-  return devName;
+    // Print the available devices
+    printf("\nAvailable Devices are :\n");
+    for (device = alldevsp; device != NULL; device = device->next)
+    {
+        printf("%d. %s - %s\n", count, device->name, device->description);
+        if (device->name != NULL)
+        {
+            strcpy(devs[count], device->name);
+        }
+        count++;
+    }
+
+    // Ask user which device to sniff
+    printf("Enter the number of the device you want to sniff : ");
+    scanf("%d", &n);
+    printf("Done\n");
+    char *devName = devs[n];
+    return devName;
 };
 // Compute checksum (RFC 1071).
 unsigned short calculate_checksum(unsigned short *paddress, int len)
