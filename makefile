@@ -2,8 +2,8 @@ CC = gcc
 CFLAGS = -Wall -g -fPIC
 
 all: sniffer spoofer
-	clear
 	rm log.txt
+	clear
 
 sniffer: sniffer.o
 	$(CC) $(CFLAGS) $^ -o $@ -lpcap

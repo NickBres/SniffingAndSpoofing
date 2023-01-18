@@ -66,6 +66,7 @@ int main()
   pcap_loop(handle, -1, got_packet, NULL);
 
   pcap_close(handle); // Close the handle
+  fclose(log);
   return 0;
 };
 
