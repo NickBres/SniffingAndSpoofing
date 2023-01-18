@@ -16,4 +16,4 @@ spoofer: spoofer.o
 #------------------------------
 
 clean:
-	rm  *.o sniffer spoofer
+	rm  *.o sniffer spoofer log.txt

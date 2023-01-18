@@ -204,11 +204,6 @@ char *getDevice(char *errbuf, pcap_t *handle)
   // Ask user which device to sniff
   printf("Enter the number of the device you want to sniff : ");
   scanf("%d", &n);
-  if (handle == NULL)
-  {
-    fprintf(stderr, "Couldn't open device %s : %s\n", devs[n], errbuf);
-    return 1;
-  }
   printf("Done\n");
   char *devName = devs[n];
   return devName;
