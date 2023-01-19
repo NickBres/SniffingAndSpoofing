@@ -25,7 +25,6 @@ struct myHeader
 };
 
 char *getDevice(char *errbuf, pcap_t *handle);
-void printDataHex(FILE *fp, char *data, int size);
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void partA(const u_char *packet,int sizeEth, int length);
 void partC(const u_char *packet, int sizeEth, int length);

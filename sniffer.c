@@ -70,16 +70,6 @@ int main()
   return 0;
 };
 
-void printDataHex(FILE *fp, char *data, int size)
-{
-  int i = 0;
-  for (i = 0; i < size; i++)
-  {
-    fprintf(fp, "%x ", data[i]);
-  }
-  fprintf(fp, "\n");
-};
-
 /*
  * print packet payload data (avoid printing binary data)
  */
