@@ -6,6 +6,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h> // for inet_ntoa()
 #include <netinet/ip_icmp.h>
+#include <ctype.h> // for isprint()
 
 #define FILTER_A "tcp and host 127.0.0.1 and dst port 9999"
 #define FILTER_C "icmp"
@@ -28,3 +29,5 @@ void printDataHex(FILE *fp, char *data, int size);
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void partA(const u_char *packet,int sizeEth, int length);
 void partC(const u_char *packet, int sizeEth, int length);
+void print_hex_ascii_line(const u_char *payload, int len, int offset);
+void print_payload(const u_char *payload, int len);

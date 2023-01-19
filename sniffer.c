@@ -14,7 +14,7 @@ int main()
 
   // Open the device for sniffing
   printf("Opening device %s for sniffing ...\n", devname);
-  handle = pcap_open_live(devname, 65536, 1, 0, errbuf);
+  handle = pcap_open_live(devname, 65536, 1, 1000, errbuf);
 
   if (handle == NULL)
   {
@@ -80,6 +80,109 @@ void printDataHex(FILE *fp, char *data, int size)
   fprintf(fp, "\n");
 };
 
+/*
+ * print packet payload data (avoid printing binary data)
+ */
+void print_payload(const u_char *payload, int len)
+{
+
+  int len_rem = len;
+  int line_width = 16; /* number of bytes per line */
+  int line_len;
+  int offset = 0; /* zero-based offset counter */
+  const u_char *ch = payload;
+
+  if (len <= 0)
+    return;
+
+  /* data fits on one line */
+  if (len <= line_width)
+  {
+    print_hex_ascii_line(ch, len, offset);
+    return;
+  }
+
+  /* data spans multiple lines */
+  for (;;)
+  {
+    /* compute current line length */
+    line_len = line_width % len_rem;
+    /* print line */
+    print_hex_ascii_line(ch, line_len, offset);
+    /* compute total remaining */
+    len_rem = len_rem - line_len;
+    /* shift pointer to remaining bytes to print */
+    ch = ch + line_len;
+    /* add offset */
+    offset = offset + line_width;
+    /* check if we have line width chars or less */
+    if (len_rem <= line_width)
+    {
+      /* print last line and get out */
+      print_hex_ascii_line(ch, len_rem, offset);
+      break;
+    }
+  }
+
+  return;
+}
+
+/*
+ * print data in rows of 16 bytes: offset   hex   ascii
+ *
+ * 00000   47 45 54 20 2f 20 48 54  54 50 2f 31 2e 31 0d 0a   GET / HTTP/1.1..
+ */
+void print_hex_ascii_line(const u_char *payload, int len, int offset)
+{
+
+  int i;
+  int gap;
+  const u_char *ch;
+
+  /* offset */
+  fprintf(log, "%05d   ", offset);
+
+  /* hex */
+  ch = payload;
+  for (i = 0; i < len; i++)
+  {
+    fprintf(log, "%02x ", *ch);
+    ch++;
+    /* print extra space after 8th byte for visual aid */
+    if (i == 7)
+      fprintf(log, " ");
+  }
+  /* print space to handle line less than 8 bytes */
+  if (len < 8)
+    fprintf(log, " ");
+
+  /* fill hex gap with spaces if not full line */
+  if (len < 16)
+  {
+    gap = 16 - len;
+    for (i = 0; i < gap; i++)
+    {
+      fprintf(log, "   ");
+    }
+  }
+  fprintf(log, "   ");
+
+  /* ascii (if printable) */
+  ch = payload;
+  for (i = 0; i < len; i++)
+  {
+    if (isprint(*ch))
+      fprintf(log, "%c", *ch);
+    else
+      fprintf(log, ".");
+    ch++;
+  }
+
+  fprintf(log, "\n");
+
+  return;
+}
+
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
   int length = header->len;
@@ -92,6 +195,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
   printf("size of eth: %d + 2?\n", sizeof(struct ethhdr));
 
   struct iphdr *iph = (struct iphdr *)(packet + sizeEth);
+  iph->ihl*4;
 
   fprintf(log, "_____________________IP_____________________\n");
 
@@ -122,6 +226,7 @@ void partA(const u_char *packet, int sizeEth, int length)
 {
   fprintf(log, "_____________________TCP_____________________\n");
   struct tcphdr *tcph = (struct tcphdr *)(packet + sizeof(struct iphdr) + sizeEth);
+  tcph->doff*4;
   fprintf(log, "| source port: %u | dest port: %u |\n", ntohs(tcph->source), ntohs(tcph->dest));
   printf("size of tcp: %d\n", sizeof(struct tcphdr));
 
@@ -141,7 +246,8 @@ void partA(const u_char *packet, int sizeEth, int length)
   {
     fprintf(log, "_____________________data_____________________\n");
     char *data = (char *)(packet + sizeEth + sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(struct myHeader));
-    printDataHex(log, data, length - sizeEth - sizeof(struct iphdr) - sizeof(struct tcphdr) - sizeof(struct myHeader));
+    //printDataHex(log, data, length - sizeEth - sizeof(struct iphdr) - sizeof(struct tcphdr) - sizeof(struct myHeader));
+    print_payload(data, dataSize);
     printf("size of data: %d\n", dataSize);
   }
   fprintf(log, "\n\n");
@@ -169,7 +275,8 @@ void partC(const u_char *packet, int sizeEth, int length)
   {
     fprintf(log, "_____________________DATA_____________________\n");
     char *data = (char *)(packet + sizeEth + sizeof(struct iphdr) + sizeof(struct icmphdr));
-    printDataHex(log, data, length - sizeEth - sizeof(struct iphdr) - sizeof(struct icmphdr));
+    // printDataHex(log, data, length - sizeEth - sizeof(struct iphdr) - sizeof(struct icmphdr));
+    print_payload(data, dataSize);
     printf("size of data: %d\n", dataSize);
     fprintf(log, "\n\n");
   }
