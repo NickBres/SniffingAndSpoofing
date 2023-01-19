@@ -222,6 +222,9 @@ void partA(const u_char *packet, int sizeEth, int length)
 
   fprintf(log, "_____________________PROTOCOL_____________________\n");
   struct myHeader *my = (struct myHeader *)(packet + sizeEth + sizeof(struct iphdr) + sizeof(struct tcphdr));
+  time_t t = ntohl(my->timestamp);
+  struct dm *dms = localtime(&t);
+  //fprintf(log, "| timestamp: %s |", asctime(dms));
   fprintf(log, "| timestamp: %u |", ntohl(my->timestamp));
   fprintf(log, " total_lenght: %u |", ntohs(my->total_lenght));
   fprintf(log, " cache_flag: %d |", my->cache_flag);
